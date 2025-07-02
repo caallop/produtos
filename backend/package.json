@@ -1,0 +1,28 @@
+{
+  "name": "produtos",
+  "version": "1.0.0",
+  "description": "Uma pequena aplicação para gerenciamento de produtos em REACT e NODE JS",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ti-vitor-assis/produtos.git"
+  },
+  "author": "Vitor de Assis",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ti-vitor-assis/produtos/issues"
+  },
+  "homepage": "https://github.com/ti-vitor-assis/produtos#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "mysql2": "^3.14.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
