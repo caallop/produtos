@@ -47,6 +47,24 @@ app.post("/produtos", (req, res) => {
   });
 });
 
+// Rota para ATUALIZAR (UPDATE) um produto
+app.put("/produtos/:id", (req, res) => {
+  const q = "UPDATE produtos SET `nome` = ?, `qtde` = ?, `valor` = ? WHERE `id` = ?";
+  const productId = req.params.id;
+
+  const values = [
+    req.body.nome,
+    req.body.qtde,
+    req.body.valor,
+  ];
+
+  db.query(q, [...values, productId], (err) => {
+    if (err) return res.status(500).json(err);
+    return res.status(200).json("Produto atualizado com sucesso.");
+  });
+});
+
+
 // Rota para DELETAR um produto
 app.delete("/produtos/:id", (req, res) => {
   const q = "DELETE FROM produtos WHERE `id` = ?";
