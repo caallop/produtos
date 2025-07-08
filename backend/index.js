@@ -10,7 +10,7 @@ app.use(express.json());
 
 // Configuração do CORS (ajuste a origem para o seu frontend)
 const corsOptions = {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000', // Use variável de ambiente para a URL do frontend
+    origin: process.env.FRONTEND_URL || 'https://gray-mushroom-07ca79a0f.2.azurestaticapps.net', // Use variável de ambiente para a URL do frontend
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     optionsSuccessStatus: 204
