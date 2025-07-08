@@ -150,6 +150,5 @@ process.on('SIGTERM', async () => {
   if (sqlPool && sqlPool.connected) {
     await sqlPool.close();
   }
-
   process.exit(0);
 });
