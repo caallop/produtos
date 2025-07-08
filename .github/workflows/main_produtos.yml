@@ -25,25 +25,27 @@ jobs:
 
       - name: npm install, build, and test
         run: |
+          cd backend/ # <--- ADICIONADO: Entra na pasta backend
           npm install
           npm run build --if-present
           npm run test --if-present
-          working-directory: './backend'
+        # working-directory: './backend' # <--- REMOVIDO: Não é mais necessário aqui, pois usamos 'cd'
 
       - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
-        working-directory: './backend'
+        run: |
+          cd backend/ # <--- ADICIONADO: Entra na pasta backend
+          zip release.zip ./* -r
+        # working-directory: './backend' # <--- REMOVIDO: Não é mais necessário aqui, pois usamos 'cd'
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: './backend/release.zip'
-          
+          path: './backend/release.zip' # <--- CAMINHO CORRIGIDO AQUI!
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    
     permissions:
       id-token: write #This is required for requesting the JWT
       contents: read #This is required for actions/checkout
@@ -60,9 +62,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_7F5550AC65B544F1BA6FE24DC4EFF431 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_60EF4D0CA5164DD88AA9ECFCD4A08DA3 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_8DC719A762A046AA8F8D9816013C6613 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_0A0AE0F96F1E44F58B5E26378F2375ED }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_EA0F9EEE8BBA4183BAA5F090AB71904D }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A5EACE59A9D64E85B6DD4252FFB65959 }}
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
@@ -71,4 +73,3 @@ jobs:
           app-name: 'produtos'
           slot-name: 'Production'
           package: .
-          
