@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 // URL da nossa API (backend)
-const API_URL = "http://localhost:8800";
+const API_URL = "https://produtos-aahrdkhzeeareah2.australiacentral-01.azurewebsites.net";
 
 function App() {
   const [produtos, setProdutos] = useState([]);
