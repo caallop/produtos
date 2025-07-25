@@ -42,6 +42,7 @@ function App() {
 
     if (!nome || !qtde || !valor) {
       alert("Por favor, preencha todos os campos.");
+      console.log(`CORS configured origin: ${corsOptions.origin}`);
       return;
     }
 
