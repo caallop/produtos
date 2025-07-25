@@ -13,7 +13,7 @@ const corsOptions = {
     // Usa variável de ambiente para a URL do frontend.
     // Certifique-se de definir FRONTEND_URL no seu ambiente de hospedagem (ex: Azure Static Web Apps).
     // Exemplo: 'https://seufilename.azurestaticapps.net'
-    origin: process.env.FRONTEND_URL || 'https://gray-mushroom-07ca79a0f.2.azurestaticapps.net',
+    origin: process.env.FRONTEND_URL || 'https://white-bush-03ce0270f.2.azurestaticapps.net',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     optionsSuccessStatus: 204
