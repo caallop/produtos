@@ -1,16 +1,87 @@
-// frontend/src/App.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 // URL da nossa API (backend)
+// Certifique-se de que esta URL está correta e que o CORS está configurado no backend
 const API_URL = "https://produtos-aahrdkhzeeareah2.australiacentral-01.azurewebsites.net";
+
+// Componente de Modal Simples para Alertas e Confirmações
+const Modal = ({ message, onConfirm, onCancel, type = 'alert' }) => {
+  if (!message) return null;
+
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+        <p className="text-lg font-semibold mb-4">{message}</p>
+        <div className="flex justify-center space-x-4">
+          {type === 'alert' && (
+            <button
+              onClick={onConfirm}
+              className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              OK
+            </button>
+          )}
+          {type === 'confirm' && (
+            <>
+              <button
+                onClick={onConfirm}
+                className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              >
+                Sim
+              </button>
+              <button
+                onClick={onCancel}
+                className="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              >
+                Cancelar
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 function App() {
   const [produtos, setProdutos] = useState([]);
   const [nome, setNome] = useState("");
   const [qtde, setQtde] = useState("");
   const [valor, setValor] = useState("");
-  const [editando, setEditando] = useState(null); // <-- NOVO: Estado para controlar a edição
+  const [editando, setEditando] = useState(null); // Estado para controlar a edição
+
+  // Estados para o Modal
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("alert");
+  const [modalAction, setModalAction] = useState(null); // Callback para ação de confirmação
+
+  // Função para exibir o modal de alerta
+  const showAlert = (message) => {
+    setModalMessage(message);
+    setModalType('alert');
+    setModalAction(() => () => setModalMessage("")); // Limpa a mensagem ao confirmar
+  };
+
+  // Função para exibir o modal de confirmação
+  const showConfirm = (message, onConfirmCallback) => {
+    setModalMessage(message);
+    setModalType('confirm');
+    setModalAction(() => {
+      return () => {
+        onConfirmCallback();
+        setModalMessage("");
+      };
+    });
+  };
+
+  // Função para fechar o modal
+  const closeModal = () => {
+    setModalMessage("");
+    setModalAction(null);
+  };
+
 
   // Função para buscar os produtos da API
   const fetchProdutos = async () => {
@@ -20,6 +91,7 @@ function App() {
       setProdutos(res.data.sort((a, b) => a.id - b.id));
     } catch (error) {
       console.error("Erro ao buscar produtos:", error);
+      showAlert("Ocorreu um erro ao buscar os produtos. Verifique a conexão com o backend.");
     }
   };
 
@@ -41,8 +113,7 @@ function App() {
     e.preventDefault();
 
     if (!nome || !qtde || !valor) {
-      alert("Por favor, preencha todos os campos.");
-      console.log(`CORS configured origin: ${corsOptions.origin}`);
+      showAlert("Por favor, preencha todos os campos.");
       return;
     }
 
@@ -56,18 +127,18 @@ function App() {
       // Se estiver editando, chama o método PUT (UPDATE)
       if (editando) {
         await axios.put(`${API_URL}/produtos/${editando.id}`, produtoData);
-        alert("Produto atualizado com sucesso!");
+        showAlert("Produto atualizado com sucesso!");
       } else {
         // Se não, chama o método POST (CREATE)
         await axios.post(`${API_URL}/produtos`, produtoData);
-        alert("Produto cadastrado com sucesso!");
+        showAlert("Produto cadastrado com sucesso!");
       }
       
       limparFormulario();
       fetchProdutos(); // Atualiza a lista após a operação
     } catch (error) {
       console.error("Erro ao salvar produto:", error);
-      alert("Ocorreu um erro ao salvar o produto.");
+      showAlert("Ocorreu um erro ao salvar o produto.");
     }
   };
   
@@ -81,16 +152,16 @@ function App() {
 
   // Função para deletar um produto
   const handleDelete = async (id) => {
-    if (window.confirm("Tem certeza que deseja deletar este produto?")) {
+    showConfirm("Tem certeza que deseja deletar este produto?", async () => {
       try {
         await axios.delete(`${API_URL}/produtos/${id}`);
-        alert("Produto deletado com sucesso!");
+        showAlert("Produto deletado com sucesso!");
         fetchProdutos(); // Atualiza a lista
       } catch (error) {
         console.error("Erro ao deletar produto:", error);
-        alert("Ocorreu um erro ao deletar o produto.");
+        showAlert("Ocorreu um erro ao deletar o produto.");
       }
-    }
+    });
   };
 
   return (
@@ -183,6 +254,14 @@ function App() {
           </tbody>
         </table>
       </div>
+
+      {/* Renderiza o Modal */}
+      <Modal
+        message={modalMessage}
+        onConfirm={modalAction}
+        onCancel={closeModal}
+        type={modalType}
+      />
     </div>
   );
 }
