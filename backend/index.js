@@ -12,12 +12,17 @@ app.use(express.json());
 const corsOptions = {
     // Usa variável de ambiente para a URL do frontend.
     // Certifique-se de definir FRONTEND_URL no seu ambiente de hospedagem (ex: Azure Static Web Apps).
-    // Exemplo: 'https://seufilename.azurestaticapps.net'
+    // A URL correta do seu frontend é: 'https://white-bush-03ce0270f.2.azurestaticapps.net'
+    // IMPORTANTE: A URL deve ser EXATA, sem barra no final.
     origin: process.env.FRONTEND_URL || 'https://white-bush-03ce0270f.2.azurestaticapps.net',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     optionsSuccessStatus: 204
 };
+
+// Loga a origem que o CORS está tentando usar para depuração
+console.log(`CORS configured origin: ${corsOptions.origin}`);
+
 app.use(cors(corsOptions));
 
 // --- Configuração do Banco de Dados SQL Server ---
@@ -71,6 +76,17 @@ connectToSQLDatabase();
 // Rota principal (teste)
 app.get("/", (req, res) => {
     res.json("Olá, este é o backend!");
+});
+
+// Nova rota para depuração de variáveis de ambiente
+app.get("/debug-env", (req, res) => {
+    res.json({
+        FRONTEND_URL_FROM_ENV: process.env.FRONTEND_URL,
+        SQL_CONNECTION_STRING_FROM_ENV: process.env.SQL_CONNECTION_STRING ? '***DEFINED***' : '***NOT DEFINED***', // Não expõe a string completa
+        CORS_CONFIGURED_ORIGIN: corsOptions.origin,
+        NODE_ENV: process.env.NODE_ENV,
+        PORT: process.env.PORT
+    });
 });
 
 // Rota para BUSCAR todos os produtos
