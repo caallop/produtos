@@ -76,7 +76,7 @@ app.delete("/produtos/:id", (req, res) => {
   });
 });
 
-// Inicia o servidor na porta 8800
-app.listen(8181, () => {
+const port = process.env.PORT || 8800;// Inicia o servidor na porta 8800
+app.listen(port, () => {
   console.log("Backend conectado e rodando na porta 8800!");
 });
