@@ -1,0 +1,41 @@
+#o compose é um container que "abraça" outros container, neste compose nós temos o backend, que esta dentro do compose, que qunado nós olhamos para ele, executa outro dockerfile(container).
+
+x-env-base: &env-base #&env-base é o nome que nós usamos para abreviar as declarações de variaveis, como se fosse um array de variaveis
+  MYSQL_DATABASE: ${MYSQL_DATABASE} #é uma variavel de ambiente, que neste caso defini o nome do banco de dados.
+  MYSQL_USER: ${MYSQL_USER} #é uma variavel de ambiente, que neste caso defini o nome de usuario para acesso ao banco de dados
+  MYSQL_PASSWORD: ${MYSQL_PASSWORD} #é uma variavel de ambiente, que neste caso defini a senha que o usuario usa para entrar no banco de dados (existe ainda o usuario padrao: root. mais para frente a senha do root tambem é exposta )
+
+services: #fala quais serviços vão ser executador, em que ordem... principal pedaço deste compose.yml
+
+  database: #serviço que será executado
+    image: mysql:8.0 #é a versão do mysql que será baiada, existe a seguinte semantica: nome do serviço que sera baixado, em seguida, dividido pelos dois pontos, a versão, podeendo ser um numero, lastest ou até "modelos"(lts)
+    container_name: produtos-db #nome do container criado pelo compose
+    restart: unless-stopped #é um comando que, toda vez que "cair" o container é reiniciado
+    command: --default-authentication-plugin=mysql_native_password #um comando que é executado todas as vezes que o compose é executado
+    healthcheck: #"verifica" a saude do container
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"] #o teste que acontece dentro do container, possui a seguinte semantica: aonde será executado, para qual serviço sera enviado (neste caso), o que sera feito.
+      interval: 5s #o intervalo que tera entre pings
+      timeout: 5s #o intervalo que tera entre pings
+      retries: 5  #quantas vezes ele tentara denovo ativar este script.
+    environment: #variaveis de ambiente (env)
+      <<: *env-base #usamos o "array de variaveis de ambiente"
+      MYSQL_ROOT_PASSWORD: rootpass #uma variavel de ambiente declarada unicamente para o serviço "database", tambem defini a senha de acesso para o usuario root
+    ports: #quais portas ele vai expor
+      - "3306:3306" #as portas expostas
+    volumes: #o volume que sera criado no dockerfile, uma vez executado será feito, na segunda vez, ele usara o que foi criado na primeira, para mais eficiencia quando executado varias vezes
+    - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro #o caminho que ele usara no volume
+
+  backend: #serviço que será executado
+    container_name: produtos-backend #nome que usaremos de container
+    build: #o que ele usara para "buildar"
+      context: ./backend #aonde ele ira "olhar"
+      dockerfile: dockerfile #aonde o dockerfile esta localizado, ele usa para buildar outro contianer dentro do container do compose
+    depends_on: #quais são as dependencias que o serviço backend precisa para ser executado, ele utiliza como parametro o container e não a aplicação
+        database: #nome do que o serviço depende, nesse caso é  serviço "database"
+          condition: service_healthy #dentro do serviço database, ele utiliza a condição de health_check, que espera o ping para funcionar         
+    environment: # são as variaveis de ambiente deste serviço
+      <<: *env-base #é o "array de variaveis de ambinete", delarado inicialmente e utilizado por todos que o chamarem
+      PORT: ${APP_PORT} #é a variavel de ambiente que tem valor de outra variavel de ambiente, neste caso está declarado no .env(enviromente), que está na raiz do projeto.
+      MYSQL_HOST: database #uma variavel de ambiente, que fala que o host do mysql é o database
+    ports: #quais portas ele vai expor
+      - ${APP_PORT}:${APP_PORT} #as portas expostas
