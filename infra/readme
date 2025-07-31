@@ -1,0 +1,64 @@
+#Criar estrutura de estado do terraform
+## Comandos para criar o Storage Account e o Container para o Terraform State
+### Estes comandos devem ser executados no Azure CLI somente na primeira vez
+
+az group create --name terraform --location brazilsouth
+
+#Estrurura de Storage para o Terraform State da JumpBox
+az storage account create \
+  --name tfstatejumpbox \
+  --resource-group terraform \
+  --sku Standard_LRS
+
+az storage container create \
+  --account-name tfstatejumpbox \
+  --name tfstate
+
+#Estrutura de Storage para o Terraform State dos Produtos
+az storage account create \
+  --name tfstateproduto \
+  --resource-group terraform \
+  --sku Standard_LRS
+  
+az storage container create \
+  --account-name tfstateproduto \
+  --name tfstate
+
+# Executar Terraform para criar a estrutura da aplicação 
+
+### Se for a primeira execução, precisa iniciar o terraform
+terraform init
+
+### Executar o Plan para validar as mudanças
+terraform plan
+
+### Executar a criação da infra da aplicação. ( Use -auto-aprove se quiser bypassar a confirmação )
+terraform apply -auto-approve
+
+### Copiar saidas do TF, e as credenciais do banco
+terraform output database_credentials
+
+
+
+# Executar Terraform para criar a infraestrutura do Jumpbox
+### Atualizar as variáveis do JumpBox com os parâmetros da infra estrutura do banco
+
+### Executar o Plan para validar as mudanças
+terraform plan
+
+### Executar a criação da infra do Jumpbox. ( Use -auto-aprove se quiser bypassar a confirmação )
+terraform apply -auto-approve
+
+# Estabelecer Túnel SSH com a JumpBox
+## dar permissão de execução no script ( Precisa ser executado apenas na primeira vez )
+chmod +x jumpbox.sh
+
+## Executar o script para conectar na JumpBox via SSH ( )
+./jumpbox.sh <fqdn_database>
+Ex.: ./jumpbox.sh "produto-mysql-server.mysql.database.azure.com"
+
+## No DBeaver ou outra ferramenta de SQL, use:
+    Host: localhost
+    Porta: 3306
+    Usuário: Utilize o valor obtido de terraform output database_credentials
+    Senha: Utilize o valor obtido de terraform output database_credentials
