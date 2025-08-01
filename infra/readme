@@ -43,6 +43,9 @@ terraform output database_credentials
 # Executar Terraform para criar a infraestrutura do Jumpbox
 ### Atualizar as variáveis do JumpBox com os parâmetros da infra estrutura do banco
 
+### Se for a primeira execução, precisa iniciar o terraform
+terraform init
+
 ### Executar o Plan para validar as mudanças
 terraform plan
 
