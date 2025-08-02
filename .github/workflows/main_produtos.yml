@@ -36,7 +36,7 @@ jobs:
           cd backend/ # <--- ADICIONADO: Entra na pasta backend
           mkdir ./dist
           cp ./index.js ./dist
-          cp ./package*.json ./
+          cp ./package*.json ./dist
           
           zip release.zip ./dist/* -r
         # working-directory: './backend' # <--- REMOVIDO: Não é mais necessário aqui, pois usamos 'cd'
@@ -78,6 +78,7 @@ jobs:
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
           slot-name: 'Production'
           package: .
+
 
 
 
