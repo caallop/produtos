@@ -23,18 +23,22 @@ jobs:
         with:
           node-version: '22.x'
 
-      - name: npm install, build, and test
-        run: |
-          cd backend/ # <--- ADICIONADO: Entra na pasta backend
-          npm install
-          npm run build --if-present
-          npm run test --if-present
-        # working-directory: './backend' # <--- REMOVIDO: Não é mais necessário aqui, pois usamos 'cd'
+      #- name: npm install, build, and test
+      #  run: |
+      #    cd backend/ # <--- ADICIONADO: Entra na pasta backend
+      #    npm install
+      #    npm run build --if-present
+      #    npm run test --if-present
+      #  # working-directory: './backend' # <--- REMOVIDO: Não é mais necessário aqui, pois usamos 'cd'
 
       - name: Zip artifact for deployment
         run: |
           cd backend/ # <--- ADICIONADO: Entra na pasta backend
-          zip release.zip ./* -r
+          mkdir ./dist
+          cp ./index.js ./dist
+          cp ./package*.json ./
+          
+          zip release.zip ./dist/* -r
         # working-directory: './backend' # <--- REMOVIDO: Não é mais necessário aqui, pois usamos 'cd'
 
       - name: Upload artifact for deployment job
@@ -74,5 +78,6 @@ jobs:
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
           slot-name: 'Production'
           package: .
+
 
 
