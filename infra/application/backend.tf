@@ -65,7 +65,7 @@ resource "azurerm_container_app" "api" {
 
   ingress {
     external_enabled = true
-    target_port      = 3000
+    target_port      = var.app_port
     transport        = "auto"
     traffic_weight {
       percentage = 100
@@ -113,7 +113,11 @@ resource "azurerm_container_app" "api" {
       env {
         name  = "MYSQL_SSL"
         value = azurerm_mysql_flexible_server.mysql_server.administrator_password
-      }      
+      }
+      env {
+        name  = "APP_PORT"
+        value = var.app_port
+      }
     }
   }
 }

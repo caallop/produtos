@@ -35,7 +35,7 @@ services: #fala quais serviços vão ser executador, em que ordem... principal p
           condition: service_healthy #dentro do serviço database, ele utiliza a condição de health_check, que espera o ping para funcionar         
     environment: # são as variaveis de ambiente deste serviço
       <<: *env-base #é o "array de variaveis de ambinete", delarado inicialmente e utilizado por todos que o chamarem
-      PORT: ${APP_PORT} #é a variavel de ambiente que tem valor de outra variavel de ambiente, neste caso está declarado no .env(enviromente), que está na raiz do projeto.
+      APP_PORT: ${APP_PORT} #é a variavel de ambiente que tem valor de outra variavel de ambiente, neste caso está declarado no .env(enviromente), que está na raiz do projeto.
       MYSQL_HOST: database #uma variavel de ambiente, que fala que o host do mysql é o database
     ports: #quais portas ele vai expor
       - ${APP_PORT}:${APP_PORT} #as portas expostas

@@ -78,7 +78,7 @@ app.delete("/produtos/:id", (req, res) => {
 });
 
 // Inicia o servidor na porta padrão ou na porta definida pela variável de ambiente
-const port = process.env.PORT || 8800;// Inicia o servidor na porta 8800, ou a que esta definida na variavel de ambiente
+const port = process.env.APP_PORT || 8800;// Inicia o servidor na porta 8800, ou a que esta definida na variavel de ambiente
 app.listen(port, () => {
   console.log(`Backend conectado e rodando na porta ${port}!`);
 });

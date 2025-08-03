@@ -2,6 +2,10 @@ variable "app_name" {
   type = string
 }
 
+variable "app_port" {
+  type = number
+}
+
 variable "subscription_id" {
   type = string
 }
