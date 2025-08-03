@@ -14,6 +14,7 @@ output database_info {
     rg   = azurerm_mysql_flexible_server.mysql_server.resource_group_name
     private_dns = azurerm_private_dns_zone.db_private_dns_zone.name
     fqdn = azurerm_mysql_flexible_server.mysql_server.fqdn
+    database_name = azurerm_mysql_flexible_database.mysqldb.name
   }
 }
 
@@ -25,15 +26,26 @@ output database_credentials {
   sensitive = true
 }
 
-# Backend
-output "service_plan_id" {
-  value = azurerm_service_plan.sp.id
+# output "gha_secret" {
+#   value = azuread_service_principal_password.gha_sp_secret.value
+#   sensitive = true
+# }
+
+# Backend com Container
+output "container_app_url" {
+  value = azurerm_container_app.api.latest_revision_fqdn
 }
 
-output "backend_url" {
-  value = azurerm_linux_web_app.backend.default_hostname
+output "pipeline_credentials" {
+  value = {
+    # client_id     = azuread_application.pipeline_app.client_id
+    # client_secret = azuread_service_principal_password.pipeline_sp_secret.value
+    username = azurerm_container_registry.acr.admin_username
+    password = azurerm_container_registry.acr.admin_password
+    login_server = azurerm_container_registry.acr.login_server
+  }
+  sensitive = true
 }
-
 
 /*
 # Frontend

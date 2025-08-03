@@ -1,53 +1,119 @@
+# resource "azuread_application" "pipeline_app" {
+#   display_name = "${var.app_name}-pipeline"
+# }
+
+# resource "azuread_service_principal" "pipeline_sp" {
+#   client_id = azuread_application.pipeline_app.client_id
+# }
+
+# resource "azuread_service_principal_password" "pipeline_sp_secret" {
+#   service_principal_id = azuread_service_principal.pipeline_sp.id
+#   end_date             = "2099-12-31T23:59:59Z"
+# }
+
+# resource "azurerm_role_assignment" "acr_push" {
+#   principal_id         = azuread_service_principal.pipeline_sp.id
+#   role_definition_name = "AcrPush"
+#   scope                = azurerm_container_registry.acr.id
+# }
+
+resource "azurerm_container_registry" "acr" {
+  name                = "${var.app_name}acr"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  sku                 = "Basic"
+  admin_enabled       = true
+}
+
+resource "azurerm_log_analytics_workspace" "law" {
+  name                = "${var.app_name}-law"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+}
 
 resource "azurerm_subnet" "appSubnet" {
-  name                 = "${var.app_name}-appSubnet"
+  name                 = "${var.app_name}-subnet"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = ["10.0.1.0/24"]
-  delegation {
-    name = "${var.app_name}-dlg-app"
-    service_delegation {
-      name    = "Microsoft.Web/serverFarms"
-      actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
+  address_prefixes     = ["10.0.4.0/23"]
+  # delegation {
+  #   name = "containerappdelegation"
+  #   service_delegation {
+  #     name = "Microsoft.App/environments"
+  #     actions = [
+  #       "Microsoft.Network/virtualNetworks/subnets/join/action",
+  #     ]
+  #   }
+  # }
+}
+
+resource "azurerm_container_app_environment" "env" {
+  name                       = "${var.app_name}-env"
+  location                   = azurerm_resource_group.rg.location
+  resource_group_name        = azurerm_resource_group.rg.name
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.law.id
+  infrastructure_subnet_id   = azurerm_subnet.appSubnet.id
+}
+
+resource "azurerm_container_app" "api" {
+  name                         = "${var.app_name}-api"
+  container_app_environment_id = azurerm_container_app_environment.env.id
+  resource_group_name          = azurerm_resource_group.rg.name
+  revision_mode                = "Single"
+
+  ingress {
+    external_enabled = true
+    target_port      = 3000
+    transport        = "auto"
+    traffic_weight {
+      percentage = 100
+      latest_revision = true
     }
   }
 
-  depends_on = [ azurerm_virtual_network.vnet ]
-}
-
-# Service Plan
-resource "azurerm_service_plan" "sp" {
-  name                = "${var.app_name}-sp"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  os_type             = "Linux"
-  sku_name            = "B1"
-
-  depends_on = [ azurerm_resource_group.rg ]
-
-}
-
-resource "azurerm_linux_web_app" "backend" {
-  name                = var.app_name
-  location            = var.location
-  resource_group_name = azurerm_resource_group.rg.name
-  service_plan_id     = azurerm_service_plan.sp.id
-
-  site_config {    
-    #linux_fx_version            = "NODE|22-lts"
-    #use_32_bit_worker_process   = true
-    #ftps_state                  = "FtpsOnly"
-    #scm_type                    = "GitHubAction"
-    #minimum_elastic_instance_count = 1
-    #app_command_line            = "npm install\nnode index.js"
-    #http20_enabled              = true
-    #always_on                   = false
-    #websockets_enabled          = false
+  registry {
+    server               = azurerm_container_registry.acr.login_server
+    username             = azurerm_container_registry.acr.admin_username
+    password_secret_name = "acr-password"
   }
 
-  virtual_network_subnet_id = azurerm_subnet.appSubnet.id
+  secret {
+    name  = "acr-password"
+    value = azurerm_container_registry.acr.admin_password
+  }
 
-  #https_only = false
-  depends_on = [ azurerm_subnet.appSubnet, azurerm_service_plan.sp ]
-  
+  template {
+    container {
+      name   = "node-api"
+      image  = "${azurerm_container_registry.acr.login_server}/${var.app_name}-api:latest"
+      cpu    = 0.5
+      memory = "1.0Gi"
+      env {
+        name  = "NODE_ENV"
+        value = "production"
+      }
+      env {
+        name  = "MYSQL_HOST"
+        value = azurerm_private_dns_zone.db_private_dns_zone.name
+      }
+      env {
+        name  = "MYSQL_DATABASE"
+        value = azurerm_mysql_flexible_database.mysqldb.name
+      }
+      env {
+        name  = "MYSQL_USER"
+        value = azurerm_mysql_flexible_server.mysql_server.administrator_login
+      }
+      env {
+        name  = "MYSQL_PASSWORD"
+        value = azurerm_mysql_flexible_server.mysql_server.administrator_password
+      }
+      env {
+        name  = "MYSQL_SSL"
+        value = azurerm_mysql_flexible_server.mysql_server.administrator_password
+      }      
+    }
+  }
 }

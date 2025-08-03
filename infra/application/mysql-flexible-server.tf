@@ -1,3 +1,26 @@
+# Generate random value for names. This should be used for the MySQL admin login.
+resource "random_string" "name" {
+  length  = 8
+  lower   = true
+  numeric = false
+  special = false
+  upper   = false
+}
+
+# Generate random value for the login password
+resource "random_password" "password_db" {
+  length           = 8
+  lower            = true
+  min_lower        = 1
+  min_numeric      = 1
+  min_special      = 1
+  min_upper        = 1
+  numeric          = true
+  override_special = "_"
+  special          = true
+  upper            = true
+}
+
 ## MySQL Flexible Server Configuration
 
 #Subnet for MySQL Flexible Server
@@ -5,7 +28,7 @@ resource "azurerm_subnet" "dbSubnet" {
   name                 = "${var.app_name}-dbSubnet"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = ["10.0.2.0/24"]
+  address_prefixes     = ["10.0.1.0/24"]
   service_endpoints    = ["Microsoft.Storage"]
 
   delegation {
@@ -45,7 +68,7 @@ resource "azurerm_mysql_flexible_server" "mysql_server" {
   resource_group_name     = azurerm_resource_group.rg.name
 
   administrator_login     = random_string.name.result
-  administrator_password  = random_password.password.result
+  administrator_password  = random_password.password_db.result
 
   delegated_subnet_id     = azurerm_subnet.dbSubnet.id
   private_dns_zone_id     = azurerm_private_dns_zone.db_private_dns_zone.id

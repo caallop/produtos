@@ -21,28 +21,6 @@ provider "azurerm" {
   subscription_id = var.subscription_id
 }
 
-# Generate random value for names. This should be used for the MySQL admin login.
-resource "random_string" "name" {
-  length  = 8
-  lower   = true
-  numeric = false
-  special = false
-  upper   = false
-}
-
-# Generate random value for the login password
-resource "random_password" "password" {
-  length           = 8
-  lower            = true
-  min_lower        = 1
-  min_numeric      = 1
-  min_special      = 1
-  min_upper        = 1
-  numeric          = true
-  override_special = "_"
-  special          = true
-  upper            = true
-}
 
 # Resource Group
 resource "azurerm_resource_group" "rg" {
