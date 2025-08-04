@@ -39,3 +39,14 @@ services: #fala quais serviços vão ser executador, em que ordem... principal p
       MYSQL_HOST: database #uma variavel de ambiente, que fala que o host do mysql é o database
     ports: #quais portas ele vai expor
       - ${APP_PORT}:${APP_PORT} #as portas expostas
+  
+
+  frontend: #serviço que será executado
+    container_name: produtos-frontend #nome que usaremos de container
+    build: #o que ele usara para "buildar"
+      context: ./frontend #aonde ele ira "olhar"
+      dockerfile: dockerfile #aonde o dockerfile esta localizado, ele usa para buildar outro contianer dentro do container do compose
+    depends_on: #quais são as dependencias que o serviço backend precisa para ser executado, ele utiliza como parametro o container e não a aplicação
+      - backend #nome do que o serviço depende, nesse caso é  serviço "database"
+    ports: #quais portas ele vai expor
+      - ${WEB_PORT}:80 #as portas expostas

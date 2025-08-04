@@ -8,7 +8,15 @@ const app = express();
 // Middleware para o Express entender JSON
 app.use(express.json());
 // Middleware para habilitar o CORS
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:8080',
+    'https://ashy-desert-0c404400f.1.azurestaticapps.net'
+  ],
+  credentials: false
+}));
+
+
 
 // Configuração da conexão com o MySQL
 const db = mysql.createConnection({

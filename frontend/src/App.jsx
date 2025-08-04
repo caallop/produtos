@@ -3,7 +3,8 @@ import axios from "axios";
 
 // URL da nossa API (backend)
 // Certifique-se de que esta URL está correta e que o CORS está configurado no backend
-const API_URL = "https://produtos-aahrdkhzeeareah2.australiacentral-01.azurewebsites.net";
+const API_URL = "https://produto-api.proudmushroom-e446e8ba.canadacentral.azurecontainerapps.io/";
+//const API_URL = "http://localhost:1234";
 
 // Componente de Modal Simples para Alertas e Confirmações
 const Modal = ({ message, onConfirm, onCancel, type = 'alert' }) => {
